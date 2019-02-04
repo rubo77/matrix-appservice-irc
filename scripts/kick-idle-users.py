@@ -23,7 +23,11 @@ def get_room_id(homeserver, alias, token):
     return res.json()["room_id"]
 
 def get_last_active_ago(homeserver, user_id, token):
-    res = requests.get(homeserver + "/_matrix/client/r0/presence/" + urllib.quote(user_id) + "/status?access_token=" + token).json()
+    global args
+    req = homeserver + "/_matrix/client/r0/presence/" + urllib.quote(user_id) + "/status?access_token=" + token
+    if args.verbose:
+        print("get_last_active_ago() call: %s" % req)
+    res = requests.get(req).json()
     return res.get("last_active_ago", None)
 
 def is_idle(homeserver, user_id, token, activity_threshold_ms):

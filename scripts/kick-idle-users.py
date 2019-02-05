@@ -25,10 +25,15 @@ def get_room_id(homeserver, alias, token):
 def get_last_active_ago(homeserver, user_id, token):
     global args
     req = homeserver + "/_matrix/client/r0/presence/" + urllib.quote(user_id) + "/status?access_token=" + token
+    res = requests.get(req).json()
     if args.verbose:
         print("get_last_active_ago() call: %s" % req)
-    res = requests.get(req).json()
-    return res.get("last_active_ago", None)
+        print(res.get("last_active_ago", None))
+    if args.ignorelastactive:
+        # return an old date
+        return 1111111111
+    else:
+        return res.get("last_active_ago", None)
 
 def is_idle(homeserver, user_id, token, activity_threshold_ms):
     return get_last_active_ago(homeserver, user_id, token) > activity_threshold_ms
@@ -109,6 +114,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--room", help="Optional. The room ID instead of the alias eg '!curBafw45738:matrix.org'", required=False)
     parser.add_argument("-H", "--homeserver", help="Base homeserver URL eg 'https://matrix.org'", required=True)
     parser.add_argument("-s", "--since", type=int, help="Days since idle users have been offline for eg '30'", required=True)
+    parser.add_argument('-i', '--ignorelastactive', action="count", help="ignore --since value and kick user anyway")
     parser.add_argument("-o", "--only", help="User prefix of users, that should be kicked. E.g. @irc_", required=True)
     parser.add_argument("-u", "--user", help="The user ID of the AS bot. E.g '@appservice-irc:irc.hackint.org'", required=True)
     parser.add_argument('-n', '--simulate', action="count", help="simulate only, see what would happen")
